@@ -1,0 +1,5 @@
+Artificial Intelligence is transforming industries.
+Machine learning is a subset of AI.
+RAG stands for Retrieval Augmented Generation.
+Semantic search uses embeddings to find similar text.
+Vector databases store embeddings efficiently.
