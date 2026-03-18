@@ -8,18 +8,23 @@ import os
 api_key = st.secrets["GROQ_API_KEY"]
 client = Groq(api_key=api_key)
 
-# 📂 Fix file path (IMPORTANT)
-BASE_DIR = os.path.dirname(os.path.dirname(__file__))
+# 📂 FIXED FILE PATH (ROOT LEVEL)
+BASE_DIR = os.path.dirname(__file__)
 file_path = os.path.join(BASE_DIR, "data", "docs.txt")
 
-# Load model (cache for speed)
+# 🛑 Safety check
+if not os.path.exists(file_path):
+    st.error(f"❌ File not found: {file_path}")
+    st.stop()
+
+# 🚀 Load model (cached)
 @st.cache_resource
 def load_model():
     return SentenceTransformer('all-MiniLM-L6-v2')
 
 model = load_model()
 
-# Load documents (cache)
+# 📄 Load documents (cached)
 @st.cache_data
 def load_docs():
     with open(file_path, "r") as f:
@@ -27,18 +32,18 @@ def load_docs():
 
 documents = load_docs()
 
-# Create embeddings (cache)
+# 🧠 Create embeddings (cached)
 @st.cache_data
 def create_embeddings(docs):
     return [model.encode(doc) for doc in docs]
 
 doc_embeddings = create_embeddings(documents)
 
-# Similarity
+# 🔍 Cosine similarity
 def cosine_similarity(a, b):
     return np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b))
 
-# Search
+# 🔎 Search function
 def search(query, top_k=2):
     query_embedding = model.encode(query)
     scores = []
@@ -50,7 +55,7 @@ def search(query, top_k=2):
     scores = sorted(scores, key=lambda x: x[1], reverse=True)
     return [doc for doc, _ in scores[:top_k]]
 
-# Generate answer
+# 🤖 Generate answer (Groq)
 def generate_answer(query, context):
     context_text = "\n".join(context)
 
@@ -77,7 +82,7 @@ Question:
     except Exception as e:
         return f"⚠️ Error: {e}\n\nFallback:\n{context_text}"
 
-# UI
+# 🎨 UI
 st.title("🤖 RAG Chatbot")
 
 query = st.text_input("Ask your question:")
